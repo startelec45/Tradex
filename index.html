@@ -1128,8 +1128,20 @@ textarea.form-input { resize: vertical; min-height: 70px; line-height: 1.5; }
         </div>
       </div>
 
+      <!-- APP UPDATES -->
+      <div class="card">
+        <div class="section-label">Mise à Jour de l'Application</div>
+        <p style="font-size:12px;color:var(--text-secondary);margin:6px 0 12px">
+          Tes données et trades sont conservés automatiquement. Clique ci-dessous pour forcer le téléchargement des dernières nouveautés.
+        </p>
+        <button class="btn btn-secondary" onclick="forceAppUpdate()" style="display:flex;align-items:center;justify-content:center;gap:8px">
+          <svg style="width:16px;height:16px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          🔄 Recharger & Mettre à jour l'application
+        </button>
+      </div>
+
       <div style="text-align:center;padding:16px 0;font-size:11px;color:var(--text-tertiary)">
-        TradeX Pro v3.0 — Données 100% Privées & Locales
+        TradeX Pro v3.1 — Données 100% Privées & Locales
       </div>
     </div>
 
@@ -2140,8 +2152,39 @@ window.addEventListener('resize', () => {
   if (currentView === 'dashboard') drawEquityChart();
 });
 
+async function forceAppUpdate() {
+  showToast('Recherche des nouveautés...');
+  try {
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (const reg of regs) {
+        await reg.update();
+      }
+    }
+  } catch(e) {
+    console.warn(e);
+  }
+  showToast('Application mise à jour ! Rechargement...');
+  setTimeout(() => {
+    window.location.reload();
+  }, 500);
+}
+
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(() => {});
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    reg.addEventListener('updatefound', () => {
+      const newWorker = reg.installing;
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          showToast('✨ Nouvelle version disponible !');
+        }
+      });
+    });
+  }).catch(() => {});
 }
 
 initTheme();
