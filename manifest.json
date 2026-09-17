@@ -5,8 +5,8 @@
   "start_url": "/Tradex/",
   "scope": "/Tradex/",
   "display": "standalone",
-  "background_color": "#050d1f",
-  "theme_color": "#050d1f",
+  "background_color": "#08090e",
+  "theme_color": "#08090e",
   "orientation": "portrait",
   "lang": "fr",
   "icons": [
